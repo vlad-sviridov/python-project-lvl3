@@ -1,0 +1,30 @@
+name: Python CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python 3.9
+        uses: actions/sutup-python@v3.0.0
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          pip install poerty
+          make install
+      - name: Run linter
+        run: make lint
+      - name: Run tests
+        run: |
+          make selfcheck
+          make test
+      - name: Test & publish code coverege
+        env:
+          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+        with:
+          coverageCommand: poetry run coverage xml
