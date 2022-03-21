@@ -1,7 +1,8 @@
-import requests
-from urllib import parse
-import re
 import os
+import re
+from urllib import parse
+
+import requests
 
 
 def get_response(url: str) -> str:

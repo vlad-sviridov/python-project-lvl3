@@ -1,7 +1,8 @@
-from page_loader.loader import download
 import os
 import tempfile
+
 import requests_mock
+from page_loader.loader import download
 
 
 def test_download():
