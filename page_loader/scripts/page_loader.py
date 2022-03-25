@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-from page_loader.cli import parse_args
+from page_loader.cli import get_parser
 from page_loader.loader import download
 
 
 def main():
-    args = parse_args()
-    output_dir = download(args[0], args[1])
+    parser = get_parser()
+    args = parser.parse_args()
+    output_dir = download(args.url, args.output)
     print(output_dir)
 
 

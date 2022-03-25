@@ -18,14 +18,3 @@ def get_parser():
     )
 
     return parser
-
-
-def parse_args() -> Tuple:
-    parser = get_parser()
-    args = parser.parse_args()
-    if os.path.isabs(args.output):
-        path = os.path.join(os.getcwd(), args.output)
-    else:
-        path = args.output
-
-    return (args.url, path)

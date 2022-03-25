@@ -5,9 +5,8 @@ from urllib import parse
 import requests
 
 
-def get_response(url: str) -> str:
-    r = requests.get(url)
-    return r.text
+def get_response(url: str):
+    return requests.get(url)
 
 
 def create_file_name(url: str, ext='.html') -> str:
@@ -33,7 +32,7 @@ def download(url: str, output_dir: str) -> str:
         str: Path to saved the web page.
     """
 
-    page_content = get_response(url)
+    page_content = get_response(url).text
     file_name = create_file_name(url)
     path_to_file = os.path.join(output_dir, file_name)
     save_web_page(page_content, path_to_file)

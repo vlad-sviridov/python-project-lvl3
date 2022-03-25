@@ -22,6 +22,6 @@ def test_download():
         assert download(page_url, tmpdirname) == page_file_path
 
     with open(page_file_path) as file:
-        assert sorted(file.read()) == sorted(content)
+        assert file.read() == content
 
     tmpdir.cleanup()
