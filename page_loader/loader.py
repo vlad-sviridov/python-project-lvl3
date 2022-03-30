@@ -3,7 +3,6 @@ import re
 from urllib import parse
 
 import requests
-from requests.api import request
 
 
 def get_response(url: str) -> requests.Response:
