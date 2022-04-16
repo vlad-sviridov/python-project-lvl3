@@ -1,24 +1,5 @@
 import os
-import re
-from urllib import parse
-
-import requests
-
-
-def get_response(url: str) -> requests.Response:
-    return requests.get(url)
-
-
-def create_file_name(url: str, ext='.html') -> str:
-    parsed_url = parse.urlparse(url)
-    raw_file_name = parsed_url.netloc + parsed_url.path
-
-    return re.sub(r'[^0-9a-zA-Z]', '-', raw_file_name) + ext
-
-
-def save_web_page(content: str, path: str) -> None:
-    with open(path, 'w') as file:
-        file.write(content)
+from page_loader.creating import create_file_name
 
 
 def download(url: str, output_dir: str) -> str:
