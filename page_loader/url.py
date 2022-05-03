@@ -2,12 +2,6 @@ import os
 import re
 from urllib import parse
 
-import requests
-
-
-def get_response(url: str, **kwargs) -> requests.Response:
-    return requests.get(url, kwargs)
-
 
 def url_to_name(url: str) -> str:
     parsed_url = parse.urlparse(url)

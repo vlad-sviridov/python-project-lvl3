@@ -3,27 +3,24 @@ from typing import Generator, Tuple, Union
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup, element
-from page_loader import urls
+from page_loader.url import get_root_url, url_to_filename, is_local_url
 
 
-def create_soup(html: str) -> BeautifulSoup:
-    return BeautifulSoup(html, 'html.parser')
-
-
-def find_resources(soup: BeautifulSoup, tags: list) -> Generator:
+def find_resources(
+        soup: BeautifulSoup, tags: list) -> Generator[str, None, None]:
     for link in soup.find_all(tags):
         yield link
 
 
 def modify_src_url(root: str, src_url: str) -> str:
     full_src_url = urljoin(root, src_url)
-    return urls.url_to_filename(full_src_url)
+    return url_to_filename(full_src_url)
 
 
-def parse_and_modify_html(html: str, url: str) -> Tuple:
-    soup = create_soup(html)
-    root_url = urls.get_root_url(url)
-    root_dir_name = urls.url_to_filename(root_url, '_files')
+def get_and_replace(html: str, url: str) -> Tuple:
+    soup = BeautifulSoup(html, 'html.parser')
+    root_url = get_root_url(url)
+    root_dir_name = url_to_filename(root_url, '_files')
 
     resources_info = []
 
@@ -34,7 +31,7 @@ def parse_and_modify_html(html: str, url: str) -> Tuple:
 
         _replace_src_url_attr(tag, download_path)
 
-        if urls.is_local_url(src_url, root_url):
+        if is_local_url(src_url, root_url):
             full_src_url = urljoin(root_url, src_url)
         else:
             full_src_url = src_url
