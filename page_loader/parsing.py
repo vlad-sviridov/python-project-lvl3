@@ -1,40 +1,64 @@
-from typing import Generator
-from bs4 import BeautifulSoup
-import urls
-import storage
+import os
+from typing import Generator, Tuple, Union
+from urllib.parse import urljoin
+
+from bs4 import BeautifulSoup, element
+from page_loader import urls
 
 
 def create_soup(html: str) -> BeautifulSoup:
     return BeautifulSoup(html, 'html.parser')
 
 
-def find_resources(soup: BeautifulSoup, tag: str,
-                   tag_atr: str = None) -> Generator:
-    if tag_atr is not None:
-        for link in soup.find_all(tag):
-            yield link[tag_atr]
-    else:
-        for link in soup.find_all(tag):
-            yield link
+def find_resources(soup: BeautifulSoup, tags: list) -> Generator:
+    for link in soup.find_all(tags):
+        yield link
 
 
-def replace_src_path(root: str, src_path: str):
-    path_to_file, ext = storage.split_path(src_path)
-    new_root = urls.url_to_name(root, '_files')
-    new_file_name = urls.url_to_name(path_to_file, ext)
-    return '/'.join((new_root, new_file_name))
+def modify_src_url(root: str, src_url: str) -> str:
+    full_src_url = urljoin(root, src_url)
+    return urls.url_to_filename(full_src_url)
 
 
-def modify_html(html: str, url: str, tag: str = 'img', tag_atr: str = 'src'):
+def parse_and_modify_html(html: str, url: str) -> Tuple:
     soup = create_soup(html)
-    root = urls.get_root_url(url)
+    root_url = urls.get_root_url(url)
+    root_dir_name = urls.url_to_filename(root_url, '_files')
 
-    src_for_download = {}
+    resources_info = []
 
-    for src in find_resources(soup, tag, tag_atr):
-        atr_value = src[tag_atr]
-        replaced_path = replace_src_path(root, atr_value)
-        src[tag_atr] = replaced_path
-        src_for_download[replaced_path] = '/'.join((root, atr_value))
+    for tag in find_resources(soup, ['img']):
+        src_url = _get_src_url(tag)
+        src_filename = modify_src_url(root_url, src_url)
+        download_path = os.path.join(root_dir_name, src_filename)
 
-    return soup.prettify(), src_for_download
+        _replace_src_url_attr(tag, download_path)
+
+        if urls.is_local_url(src_url, root_url):
+            full_src_url = urljoin(root_url, src_url)
+        else:
+            full_src_url = src_url
+
+        resources_info.append({
+            'download_path': download_path,
+            'url': full_src_url
+        })
+
+    return soup.prettify(), resources_info
+
+
+def _get_src_url_attr(tag: element.Tag) -> Union[str, None]:
+    if tag.name == 'img':
+        return 'src'
+
+
+def _get_src_url(tag: element.Tag) -> Union[str, None]:
+    attr = _get_src_url_attr(tag)
+    if attr:
+        return tag.get(attr)
+
+
+def _replace_src_url_attr(tag: element.Tag, url: str) -> None:
+    attr = _get_src_url_attr(tag)
+    if attr:
+        tag[attr] = url
