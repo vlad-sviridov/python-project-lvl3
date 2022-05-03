@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, Union
+from typing import Union
 
 
 def create_file(content: Union[str, bytes], path: str) -> None:
@@ -11,8 +11,3 @@ def create_file(content: Union[str, bytes], path: str) -> None:
 def create_dir(path: str) -> None:
     if not os.path.exists(path):
         os.mkdir(path)
-
-
-def split_path(path: str) -> Tuple:
-    path_to_file, ext = os.path.splitext(path)
-    return path_to_file, ext
