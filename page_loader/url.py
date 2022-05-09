@@ -3,25 +3,22 @@ import re
 from urllib.parse import urlparse
 
 
-def url_to_name(url: str) -> str:
-    parsed_url = urlparse(url)
-    raw = parsed_url.netloc + parsed_url.path
-    return re.sub(r'[^0-9a-zA-Z_]', '-', raw)
+def format_name(name: str) -> str:
+    return re.sub(r'[^0-9a-zA-Z_]', '-', name)
 
 
 def url_to_filename(url: str, default_ext: str = '.html') -> str:
-    _, ext = os.path.splitext(url.rstrip('/'))
+    parsed_url = urlparse(url)
+    path, ext = os.path.splitext(parsed_url.path)
     if not ext:
-        url_without_ext = url
         ext = default_ext
-    else:
-        url_without_ext = url[:-len(ext)]
-    return url_to_name(url_without_ext) + ext
+    return format_name(parsed_url.netloc + path.rstrip('/')) + ext
 
 
 def url_to_dirname(url: str, postfix: str = '_files') -> str:
-    url = url.rstrip('/')
-    return url_to_name(url) + postfix
+    parsed_url = urlparse(url)
+    path = parsed_url.path.rstrip('/')
+    return format_name(parsed_url.netloc + path) + postfix
 
 
 def get_root_url(url: str) -> str:
