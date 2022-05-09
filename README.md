@@ -14,4 +14,4 @@ python3 -m pip install git+https://github.com/vlad-sviridov/python-project-lvl3
 ```
 
 ## Usage
-[![asciicast](https://asciinema.org/a/3boSch20ZOL8PNpyOElfToBL8.svg)](https://asciinema.org/a/3boSch20ZOL8PNpyOElfToBL8)
+[![asciicast](https://asciinema.org/a/chVMX1DHRMr8atPO8k6oUNzUh.svg)](https://asciinema.org/a/chVMX1DHRMr8atPO8k6oUNzUh)
