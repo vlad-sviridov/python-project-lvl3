@@ -1,7 +1,6 @@
 import os
 from typing import Union
 
-
 DIR_MODE = 0o744
 
 

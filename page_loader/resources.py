@@ -3,7 +3,7 @@ from typing import Generator, Tuple
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
-from page_loader.url import get_root_url, url_to_filename, url_to_dirname
+from page_loader.url import get_root_url, url_to_dirname, url_to_filename
 
 
 def find_resources(
