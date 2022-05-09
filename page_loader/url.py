@@ -10,7 +10,7 @@ def url_to_name(url: str) -> str:
 
 
 def url_to_filename(url: str, default_ext: str = '.html') -> str:
-    _, ext = os.path.splitext(url)
+    _, ext = os.path.splitext(url.rstrip('/'))
     if not ext:
         url_without_ext = url
         ext = default_ext
