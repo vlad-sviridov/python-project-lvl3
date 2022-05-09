@@ -1,0 +1,8 @@
+.text1 {
+    font-size: 16px;
+}
+@media (min-width: 1200px) {
+    .text1 {
+        font-size: 20px;
+    }
+}
