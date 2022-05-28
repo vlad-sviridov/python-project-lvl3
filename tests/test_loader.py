@@ -91,7 +91,7 @@ def test_download(requests_mock, tmpdir):
 
 def test_download_unavailable_page(requests_mock, tmpdir):
     url = 'https://test.com'
-    requests_mock.get('GET', url, status_code=404)
+    requests_mock.get(url, status_code=404)
 
     with pytest.raises(RequestException):
         download(url, str(tmpdir))
