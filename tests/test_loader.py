@@ -1,8 +1,10 @@
 import os
-import tempfile
-
-import requests_mock
+import pytest
+import requests
+from requests.exceptions import RequestException
 from page_loader.loader import download
+
+
 
 
 def load_fixture(path_to_file, binary=False):
@@ -11,7 +13,7 @@ def load_fixture(path_to_file, binary=False):
         return file.read()
 
 
-def test_download():
+def test_download(requests_mock, tmpdir):
     path_to_orig_page = './tests/fixtures/page.html'
     page_url = 'https://ru.hexlet.io/courses'
 
@@ -20,10 +22,8 @@ def test_download():
         './tests/fixtures/page_sources/application.css')
     runtime_js = load_fixture('./tests/fixtures/page_sources/runtime.js')
 
-    tmpdir = tempfile.TemporaryDirectory()
-    tmpdirname = tmpdir.name
 
-    page_file_path = os.path.join(tmpdirname, 'ru-hexlet-io-courses.html')
+    page_file_path = tmpdir / 'ru-hexlet-io-courses.html'
 
     mocks = [
         (
@@ -45,17 +45,16 @@ def test_download():
     ]
 
 # Check a path of web page
-    with requests_mock.Mocker() as mocker:
-        for url, content in mocks:
-            if isinstance(content, bytes):
-                mocker.get(url, content=content)
-            else:
-                mocker.get(url, text=content)
+    for url, content in mocks:
+        if isinstance(content, bytes):
+            requests_mock.get(url, content=content)
+        else:
+            requests_mock.get(url, text=content)
 
-        assert download(page_url, tmpdirname) == page_file_path
+    assert download(page_url, str(tmpdir)) == page_file_path
 
 # Compare html of web page
-    path_to_page = os.path.join(tmpdirname, 'ru-hexlet-io-courses.html')
+    path_to_page = tmpdir / 'ru-hexlet-io-courses.html'
     page_html = load_fixture('./tests/fixtures/page_after.html')
     with open(path_to_page, 'r') as file:
         assert file.read() == page_html
@@ -82,11 +81,39 @@ def test_download():
     ]
 
     for file_name, content in resources:
-        path_to_file_name = os.path.join(tmpdirname, file_name)
+        path_to_file_name = tmpdir / file_name
 
         read_mode = 'rb' if isinstance(content, bytes) else 'r'
 
         with open(path_to_file_name, read_mode) as file:
             assert file.read() == content
 
-    tmpdir.cleanup()
+
+def test_download_unavailable_page(requests_mock, tmpdir):
+    url = 'https://test.com'
+    requests_mock.get('GET', url, status_code=404)
+
+    with pytest.raises(RequestException):
+        download(url, str(tmpdir))
+
+
+def test_download_some_unavailable_page(requests_mock, tmpdir):
+    url = 'https://test.com'
+    html = '''
+        <html>
+            <body>
+                <img src="unavailable.png">
+                <img src="available.png">
+            <body>
+        </html>
+    '''
+
+    requests_mock.get(url, text=html)
+    requests_mock.get(url + '/unavailable.png', status_code=404)
+    requests_mock.get(url + '/available.png', content=b'0b001100')
+
+    download(url, str(tmpdir))
+    resources_dir = tmpdir / 'test-com_files'
+
+    assert not os.path.isfile(resources_dir / 'test-com-unavailable.png')
+    assert os.path.isfile(resources_dir / 'test-com-available.png')
