@@ -11,12 +11,14 @@ from requests.exceptions import RequestException
 def download_resoures(sources: dict, directory: str = '') -> None:
     for info in sources:
         try:
-            content = requests.get(info['url']).content
-        except RequestException:
+            resp = requests.get(info['url'])
+            resp.raise_for_status()
+            content = resp.content
+            src_dir, _ = os.path.split(info['download_path'])
+            create_dir(directory + '/' + src_dir)
+            save_file(content, directory + '/' + info['download_path'])
+        except (RequestException, OSError):
             logging.warning('Failed downloaded resource %s', info['url'])
-        src_dir, _ = os.path.split(info['download_path'])
-        create_dir(directory + '/' + src_dir)
-        save_file(content, directory + '/' + info['download_path'])
 
 
 def download(url: str, output_dir: str) -> str:
@@ -31,14 +33,16 @@ def download(url: str, output_dir: str) -> str:
     """
 
     try:
-        html = requests.get(url).text
+        resp = requests.get(url)
+        resp.raise_for_status()
     except RequestException as e:
         logging.error('Error request, Error Message: %s', str(e))
+        raise
 
     file_name = url_to_filename(url)
     path_to_file = os.path.join(output_dir, file_name)
 
-    modified_html, res_of_page = get_and_replace(html, url)
+    modified_html, res_of_page = get_and_replace(resp.text, url)
     download_resoures(res_of_page, output_dir)
     save_file(modified_html, path_to_file)
 
