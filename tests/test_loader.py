@@ -1,10 +1,9 @@
 import os
+
 import pytest
 import requests
-from requests.exceptions import RequestException
 from page_loader.loader import download
-
-
+from requests.exceptions import RequestException
 
 
 def load_fixture(path_to_file, binary=False):
@@ -115,5 +114,17 @@ def test_download_some_unavailable_page(requests_mock, tmpdir):
     download(url, str(tmpdir))
     resources_dir = tmpdir / 'test-com_files'
 
-    assert not os.path.isfile(resources_dir / 'test-com-unavailable.png')
+    assert os.path.isfile(tmpdir / 'test-com.html')
     assert os.path.isfile(resources_dir / 'test-com-available.png')
+    assert not os.path.isfile(resources_dir / 'test-com-unavailable.png')
+
+
+def test_download_without_resources(requests_mock, tmpdir):
+    url = 'https://test.com'
+    html = '<html><p>Hello World!</p></html>'
+
+    requests_mock.get(url, text=html)
+    download(url, tmpdir)
+
+    assert not os.path.isdir(tmpdir / 'test-com_files')
+    assert os.path.isfile(tmpdir / 'test-com.html')
