@@ -11,7 +11,7 @@ from requests.exceptions import RequestException
 
 def download_resources(sources: dict, directory: str = '') -> None:
     bar = IncrementalBar(
-        'Downloading the page',
+        'Downloading the page resources:',
         max=len(sources),
         suffix='%(percent)d%%'
     )
@@ -43,7 +43,7 @@ def download(url: str, output_dir: str) -> str:
     """
 
     try:
-        resp = requests.get(url, stream=True)
+        resp = requests.get(url)
         resp.raise_for_status()
     except RequestException as e:
         logging.error('Error request, Error Message: %s', str(e))
