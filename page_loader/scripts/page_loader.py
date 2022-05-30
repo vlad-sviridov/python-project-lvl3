@@ -18,7 +18,7 @@ def main():
         logging.error('Download failed %s', e)
         sys.exit(1)
     else:
-        print('Page was successfully downloaded into %s', output_dir)
+        print(f'Page was successfully downloaded into {output_dir}')
 
 
 if __name__ == '__main__':
