@@ -1,7 +1,6 @@
 import os
 
 import pytest
-import requests
 from page_loader.loader import download
 from requests.exceptions import RequestException
 
@@ -20,7 +19,6 @@ def test_download(requests_mock, tmpdir):
     application_css = load_fixture(
         './tests/fixtures/page_sources/application.css')
     runtime_js = load_fixture('./tests/fixtures/page_sources/runtime.js')
-
 
     page_file_path = tmpdir / 'ru-hexlet-io-courses.html'
 

@@ -7,10 +7,11 @@ from page_loader.storage import create_dir, save_file
 tmpdir = tempfile.TemporaryDirectory()
 tmpdirname = tmpdir.name
 
+
 @pytest.mark.parametrize(
     'content,path',
     [
-        ('<html></html>', tmpdirname +'/test.html'),
+        ('<html></html>', tmpdirname + '/test.html'),
         (b'0b001100', tmpdirname + '/test.png')
     ]
 )
