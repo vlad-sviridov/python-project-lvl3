@@ -1,44 +1,43 @@
 import os
-from typing import Generator, Tuple
+from typing import Tuple, Union
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
-from page_loader.url import get_root_url, url_to_dirname, url_to_filename
+from page_loader.url import url_to_dirname, url_to_filename
+
+TAG_ATTRIBUTES = {
+    'img': 'src',
+    'script': 'src',
+    'link': 'href',
+}
+FILE_EXT = '.html'
+DIRECTORY_EXT = '_files'
 
 
-def find_resources(
-        soup: BeautifulSoup, tags: list) -> Generator[str, None, None]:
-    for link in soup.find_all(tags):
-        yield link
-
-
-def is_local_url(url: str, root_url: str):
+def is_local_url(url: str, root_url_hostname: Union[str, None]):
     url_hostname = urlparse(url).hostname
-    root_url_hostname = urlparse(root_url).hostname
     return url_hostname is None or url_hostname == root_url_hostname
 
 
 def get_and_replace(html: str, url: str) -> Tuple:
     soup = BeautifulSoup(html, 'html.parser')
-    root_url = get_root_url(url)
-    root_dir_name = url_to_dirname(url)
+    parsed_url = urlparse(url)
+    url_scheme, url_hostname = parsed_url.scheme, parsed_url.hostname
+    root_dir_name = url_to_dirname(url, DIRECTORY_EXT)
     resources_info = []
 
-    attributes = {
-        'img': 'src',
-        'script': 'src',
-        'link': 'href',
-    }
-
-    for tag in find_resources(soup, ['img', 'link', 'script']):
-        attribute = attributes[tag.name]
+    for tag in soup(TAG_ATTRIBUTES.keys()):
+        attribute = TAG_ATTRIBUTES[tag.name]
         src_url = tag.get(attribute)
 
-        if not is_local_url(src_url, root_url):
+        if src_url is None:
             continue
 
-        full_src_url = urljoin(root_url, src_url)
-        src_filename = url_to_filename(full_src_url)
+        if not is_local_url(src_url, url_hostname):
+            continue
+
+        full_src_url = urljoin(url_scheme + '://' + url_hostname, src_url)
+        src_filename = url_to_filename(full_src_url, FILE_EXT)
         download_path = os.path.join(root_dir_name, src_filename)
 
         tag[attribute] = download_path

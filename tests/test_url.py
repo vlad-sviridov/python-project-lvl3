@@ -1,18 +1,5 @@
 import pytest
-from page_loader.url import format_name, url_to_dirname, url_to_filename
-
-
-@pytest.mark.parametrize(
-    'name,expected',
-    [
-        ('ru.hexlet.io/test', 'ru-hexlet-io-test'),
-        ('ru.hexlet.io/v3/test', 'ru-hexlet-io-v3-test'),
-        ('ru-hexlet-io', 'ru-hexlet-io'),
-        ('hexlet.io/test_v3/', 'hexlet-io-test_v3-')
-    ]
-)
-def test_format_name(name, expected):
-    assert format_name(name) == expected
+from page_loader.url import url_to_dirname, url_to_filename
 
 
 @pytest.mark.parametrize(
@@ -28,7 +15,7 @@ def test_format_name(name, expected):
     ]
 )
 def test_url_to_filename(url, expected):
-    assert url_to_filename(url) == expected
+    assert url_to_filename(url, '.html') == expected
 
 
 @pytest.mark.parametrize(
@@ -40,4 +27,4 @@ def test_url_to_filename(url, expected):
     ]
 )
 def test_url_to_dirname(url, expected):
-    assert url_to_dirname(url) == expected
+    assert url_to_dirname(url, '_files') == expected

@@ -12,72 +12,52 @@ def load_fixture(path_to_file, binary=False):
 
 
 def test_download(requests_mock, tmpdir):
-    path_to_orig_page = './tests/fixtures/page.html'
     page_url = 'https://ru.hexlet.io/courses'
+    orig_page_html = load_fixture('./tests/fixtures/page.html')
 
     python_png = load_fixture('./tests/fixtures/page_sources/python.png', True)
     application_css = load_fixture(
         './tests/fixtures/page_sources/application.css')
     runtime_js = load_fixture('./tests/fixtures/page_sources/runtime.js')
+    resources_dir = 'ru-hexlet-io-courses_files/'
 
-    page_file_path = tmpdir / 'ru-hexlet-io-courses.html'
-
-    mocks = [
-        (
-            page_url,
-            load_fixture(path_to_orig_page)
-        ),
+    resources_mocks = [
         (
             'https://ru.hexlet.io/assets/professions/python.png',
-            python_png
+            python_png,
+            resources_dir + 'ru-hexlet-io-assets-professions-python.png'
         ),
         (
             'https://ru.hexlet.io/assets/application.css',
-            application_css
+            application_css,
+            resources_dir + 'ru-hexlet-io-assets-application.css'
         ),
         (
             'https://ru.hexlet.io/packs/js/runtime.js',
-            runtime_js
+            runtime_js,
+            resources_dir + 'ru-hexlet-io-packs-js-runtime.js'
         )
     ]
 
-# Check a path of web page
-    for url, content in mocks:
+    for url, content, _ in resources_mocks:
         if isinstance(content, bytes):
             requests_mock.get(url, content=content)
         else:
             requests_mock.get(url, text=content)
 
+    # Check a path of web page
+    requests_mock.get(page_url, text=orig_page_html)
+    page_file_path = tmpdir / 'ru-hexlet-io-courses.html'
     assert download(page_url, str(tmpdir)) == page_file_path
 
-# Compare html of web page
+    # Compare html of web page
     path_to_page = tmpdir / 'ru-hexlet-io-courses.html'
     page_html = load_fixture('./tests/fixtures/page_after.html')
     with open(path_to_page, 'r') as file:
         assert file.read() == page_html
 
     # Check a path of web page resources
-    resources_dir = 'ru-hexlet-io-courses_files/'
-    resources = [
-        (
-            resources_dir + 'ru-hexlet-io-courses.html',
-            load_fixture('./tests/fixtures/page.html')
-        ),
-        (
-            resources_dir + 'ru-hexlet-io-assets-professions-python.png',
-            python_png
-        ),
-        (
-            resources_dir + 'ru-hexlet-io-assets-application.css',
-            application_css
-        ),
-        (
-            resources_dir + 'ru-hexlet-io-packs-js-runtime.js',
-            runtime_js
-        )
-    ]
-
-    for file_name, content in resources:
+    for _, content, file_name in resources_mocks:
         path_to_file_name = tmpdir / file_name
 
         read_mode = 'rb' if isinstance(content, bytes) else 'r'
@@ -94,7 +74,7 @@ def test_download_unavailable_page(requests_mock, tmpdir):
         download(url, str(tmpdir))
 
 
-def test_download_some_unavailable_page(requests_mock, tmpdir):
+def test_not_downloding_unavailable_resources(requests_mock, tmpdir):
     url = 'https://test.com'
     html = '''
         <html>

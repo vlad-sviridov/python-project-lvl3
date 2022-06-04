@@ -17,17 +17,19 @@ def download_resources(sources: dict, directory: str = '') -> None:
     )
 
     for info in sources:
+        src_dir, _ = os.path.split(info['download_path'])
         try:
             resp = requests.get(info['url'])
             resp.raise_for_status()
-            content = resp.content
-            src_dir, _ = os.path.split(info['download_path'])
             create_dir(directory + '/' + src_dir)
-            save_file(content, directory + '/' + info['download_path'])
-            logging.info('Downloaded resource %s', info['url'])
-            bar.next()
-        except (RequestException, OSError):
-            logging.warning('Failed downloaded resource %s', info['url'])
+            save_file(resp.content, directory + '/' + info['download_path'])
+        except (RequestException, OSError) as e:
+            logging.error('Failed downloaded resource %s. Message: %s',
+                          info['url'], e)
+
+        bar.next()
+        logging.debug('Downloaded resource %s', info['url'])
+
     bar.finish()
 
 
@@ -42,17 +44,15 @@ def download(url: str, output_dir: str) -> str:
         str: Path to saved the web page.
     """
 
-    try:
-        resp = requests.get(url)
-        resp.raise_for_status()
-    except RequestException as e:
-        logging.error('Error request, Error Message: %s', str(e))
-        raise
+    resp = requests.get(url)
+    resp.raise_for_status()
 
-    file_name = url_to_filename(url)
+    logging.info('requested url: %s', url)
+    logging.info('output path: %s', output_dir)
+
+    file_name = url_to_filename(url, '.html')
     path_to_file = os.path.join(output_dir, file_name)
 
-    logging.info('Started to downloading web page %s', url)
     modified_html, res_of_page = get_and_replace(resp.text, url)
     download_resources(res_of_page, output_dir)
     save_file(modified_html, path_to_file)

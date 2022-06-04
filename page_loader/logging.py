@@ -1,12 +1,10 @@
 import logging
-import sys
+
+FORMAT = '%(levelname)s: %(message)s'
 
 
 def setup() -> None:
     logging.basicConfig(
-        level=logging.WARNING,
-        stream=sys.stderr,
-        format='''
-        %(asctime)s - %(levelname)s - %(filename)s:%s(lineno)- %(message)s
-        '''
+        level=logging.INFO,
+        format=FORMAT
     )
