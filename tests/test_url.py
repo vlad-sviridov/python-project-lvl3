@@ -1,4 +1,5 @@
 import pytest
+
 from page_loader.url import url_to_dirname, url_to_filename
 
 
@@ -15,7 +16,7 @@ from page_loader.url import url_to_dirname, url_to_filename
     ]
 )
 def test_url_to_filename(url, expected):
-    assert url_to_filename(url, '.html') == expected
+    assert url_to_filename(url) == expected
 
 
 @pytest.mark.parametrize(
@@ -27,4 +28,4 @@ def test_url_to_filename(url, expected):
     ]
 )
 def test_url_to_dirname(url, expected):
-    assert url_to_dirname(url, '_files') == expected
+    assert url_to_dirname(url) == expected

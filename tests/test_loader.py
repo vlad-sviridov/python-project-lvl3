@@ -1,8 +1,9 @@
 import os
 
 import pytest
+import requests
+
 from page_loader.loader import download
-from requests.exceptions import RequestException
 
 
 def load_fixture(path_to_file, binary=False):
@@ -70,7 +71,7 @@ def test_download_unavailable_page(requests_mock, tmpdir):
     url = 'https://test.com'
     requests_mock.get(url, status_code=404)
 
-    with pytest.raises(RequestException):
+    with pytest.raises(requests.exceptions.HTTPError):
         download(url, str(tmpdir))
 
 

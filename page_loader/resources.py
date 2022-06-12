@@ -1,50 +1,50 @@
 import os
-from typing import Tuple, Union
-from urllib.parse import urljoin, urlparse
+from typing import Tuple, Optional
 
+from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
+
 from page_loader.url import url_to_dirname, url_to_filename
+
 
 TAG_ATTRIBUTES = {
     'img': 'src',
     'script': 'src',
     'link': 'href',
 }
-FILE_EXT = '.html'
-DIRECTORY_EXT = '_files'
 
 
-def is_local_url(url: str, root_url_hostname: Union[str, None]):
-    url_hostname = urlparse(url).hostname
-    return url_hostname is None or url_hostname == root_url_hostname
+def is_local_url(url: str, base_hostname: Optional[str] = None) -> bool:
+    hostname = urlparse(url).hostname
+    return hostname is None or hostname == base_hostname
 
 
 def get_and_replace(html: str, url: str) -> Tuple:
     soup = BeautifulSoup(html, 'html.parser')
     parsed_url = urlparse(url)
-    url_scheme, url_hostname = parsed_url.scheme, parsed_url.hostname
-    root_dir_name = url_to_dirname(url, DIRECTORY_EXT)
+    base_hostname = parsed_url.hostname
+    root_dir_name = url_to_dirname(url)
     resources_info = []
 
     for tag in soup(TAG_ATTRIBUTES.keys()):
-        attribute = TAG_ATTRIBUTES[tag.name]
-        src_url = tag.get(attribute)
+        tag_attribute = TAG_ATTRIBUTES[tag.name]
+        resource = tag.get(tag_attribute)
 
-        if src_url is None:
+        if resource is None:
             continue
 
-        if not is_local_url(src_url, url_hostname):
+        if not is_local_url(resource, base_hostname):
             continue
 
-        full_src_url = urljoin(url_scheme + '://' + url_hostname, src_url)
-        src_filename = url_to_filename(full_src_url, FILE_EXT)
-        download_path = os.path.join(root_dir_name, src_filename)
+        full_resource_url = urljoin(url, resource)
+        filename_of_resource = url_to_filename(full_resource_url)
+        download_path = os.path.join(root_dir_name, filename_of_resource)
 
-        tag[attribute] = download_path
+        tag[tag_attribute] = download_path
 
         resources_info.append({
             'download_path': download_path,
-            'url': full_src_url
+            'url': full_resource_url
         })
 
     return soup.prettify(), resources_info

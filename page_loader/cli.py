@@ -1,8 +1,9 @@
-import argparse
 import os
 
+import argparse
 
-def get_parser():
+
+def arg_parser():
     parser = argparse.ArgumentParser(
         description='page-loader is cli for download a web-page'
     )

@@ -1,8 +1,19 @@
-import logging
 import os
 from typing import Union
 
+import logging
+
+
 DIR_MODE = 0o744
+
+
+def check_directory(directory_path):
+    if not os.path.exists(directory_path):
+        raise FileNotFoundError('Not search a directory %s', directory_path)
+    if not os.access(directory_path, os.W_OK):
+        raise PermissionError('No permission to write %s', directory_path)
+    if not os.path.isdir(directory_path):
+        raise NotADirectoryError('%s not a directory', directory_path)
 
 
 def save_file(content: Union[str, bytes], path: str) -> None:

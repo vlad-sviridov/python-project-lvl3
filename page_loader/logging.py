@@ -1,5 +1,6 @@
 import logging
 
+
 FORMAT = '%(levelname)s: %(message)s'
 
 

@@ -1,8 +1,10 @@
 import os
-import tempfile
 
+import tempfile
 import pytest
+
 from page_loader.storage import create_dir, save_file
+
 
 tmpdir = tempfile.TemporaryDirectory()
 tmpdirname = tmpdir.name

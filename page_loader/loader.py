@@ -1,34 +1,40 @@
-import logging
 import os
 
 import requests
-from page_loader.resources import get_and_replace
-from page_loader.storage import create_dir, save_file
-from page_loader.url import url_to_filename
+import logging
 from progress.bar import IncrementalBar
-from requests.exceptions import RequestException
+
+from page_loader import resources, storage
+from page_loader.url import url_to_filename
+
+
+def get_response(url: str) -> requests.Response:
+    resp = requests.get(url)
+    resp.raise_for_status()
+    return resp
 
 
 def download_resources(sources: dict, directory: str = '') -> None:
     bar = IncrementalBar(
         'Downloading the page resources:',
         max=len(sources),
-        suffix='%(percent)d%%'
-    )
+        suffix='%(percent)d%%')
 
-    for info in sources:
-        src_dir, _ = os.path.split(info['download_path'])
+    for resource_info in sources:
+        resource_dir, _ = os.path.split(resource_info['download_path'])
+        storage.create_dir(os.path.join(directory, resource_dir))
         try:
-            resp = requests.get(info['url'])
-            resp.raise_for_status()
-            create_dir(directory + '/' + src_dir)
-            save_file(resp.content, directory + '/' + info['download_path'])
-        except (RequestException, OSError) as e:
+            response = get_response(resource_info['url'])
+        except requests.exceptions.HTTPError as e:
             logging.error('Failed downloaded resource %s. Message: %s',
-                          info['url'], e)
-
+                          resource_info['url'], e)
+        else:
+            storage.save_file(
+                response.content,
+                os.path.join(directory, resource_info['download_path'])
+            )
         bar.next()
-        logging.debug('Downloaded resource %s', info['url'])
+        logging.debug('Downloaded resource %s', resource_info['url'])
 
     bar.finish()
 
@@ -44,17 +50,15 @@ def download(url: str, output_dir: str) -> str:
         str: Path to saved the web page.
     """
 
-    resp = requests.get(url)
-    resp.raise_for_status()
+    storage.check_directory(output_dir)
+    response = get_response(url)
+    page_file_name = url_to_filename(url)
+    page_path_to_file = os.path.join(output_dir, page_file_name)
+    modified_html, resources_of_page = resources.get_and_replace(
+        response.text,
+        url
+    )
+    storage.save_file(modified_html, page_path_to_file)
+    download_resources(resources_of_page, output_dir)
 
-    logging.info('requested url: %s', url)
-    logging.info('output path: %s', output_dir)
-
-    file_name = url_to_filename(url, '.html')
-    path_to_file = os.path.join(output_dir, file_name)
-
-    modified_html, res_of_page = get_and_replace(resp.text, url)
-    download_resources(res_of_page, output_dir)
-    save_file(modified_html, path_to_file)
-
-    return path_to_file
+    return page_path_to_file
