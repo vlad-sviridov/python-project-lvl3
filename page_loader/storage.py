@@ -4,16 +4,16 @@ from typing import Union
 import logging
 
 
-DIR_MODE = 0o744
+DIRECTORY_PERMISSIONS = 0o744
 
 
-def check_directory(directory_path):
+def check_directory(directory_path: str) -> None:
     if not os.path.exists(directory_path):
-        raise FileNotFoundError('Not search a directory %s', directory_path)
+        raise FileNotFoundError(f'Not search a directory {directory_path}')
     if not os.access(directory_path, os.W_OK):
-        raise PermissionError('No permission to write %s', directory_path)
+        raise PermissionError(f'No permission to write {directory_path}')
     if not os.path.isdir(directory_path):
-        raise NotADirectoryError('%s not a directory', directory_path)
+        raise NotADirectoryError(f'{directory_path} is not a directory')
 
 
 def save_file(content: Union[str, bytes], path: str) -> None:
@@ -25,5 +25,5 @@ def save_file(content: Union[str, bytes], path: str) -> None:
 
 def create_dir(path: str) -> None:
     if not os.path.exists(path):
-        os.mkdir(path, mode=DIR_MODE)
+        os.mkdir(path, mode=DIRECTORY_PERMISSIONS)
     logging.debug('Created directory %s', path)

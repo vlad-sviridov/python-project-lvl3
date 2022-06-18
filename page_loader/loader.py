@@ -14,20 +14,20 @@ def get_response(url: str) -> requests.Response:
     return resp
 
 
-def download_resources(sources: dict, directory: str = '') -> None:
+def download_resources(resources: dict, directory: str) -> None:
     bar = IncrementalBar(
         'Downloading the page resources:',
-        max=len(sources),
+        max=len(resources),
         suffix='%(percent)d%%')
 
-    for resource_info in sources:
+    for resource_info in resources:
         resource_dir, _ = os.path.split(resource_info['download_path'])
         storage.create_dir(os.path.join(directory, resource_dir))
         try:
             response = get_response(resource_info['url'])
         except requests.exceptions.HTTPError as e:
-            logging.error('Failed downloaded resource %s. Message: %s',
-                          resource_info['url'], e)
+            logging.warning('Failed downloaded resource %s. Message: %s',
+                            resource_info['url'], e)
         else:
             storage.save_file(
                 response.content,
@@ -44,7 +44,7 @@ def download(url: str, output_dir: str) -> str:
 
     Args:
         url (str): Web page address.
-        output_dir: Path to directory where the web page will be saved.
+        output_dir (str): Path to directory where the web page will be saved.
 
     Retruns:
         str: Path to saved the web page.
