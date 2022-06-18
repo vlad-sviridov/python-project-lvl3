@@ -46,7 +46,7 @@ def download(url: str, output_dir: str) -> str:
         url (str): Web page address.
         output_dir (str): Path to directory where the web page will be saved.
 
-    Retruns:
+    Returns:
         str: Path to saved the web page.
     """
 
